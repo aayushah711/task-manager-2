@@ -7,7 +7,7 @@ const loginValidator = require("../validators/loginValidator");
 exports.register = async (req, res) => {
   try {
     const { error } = registerValidator.validate(req.body);
-    if (error) return res.status(400).json({ error: error.details });
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
     const { firstName, lastName, email, password } = req.body;
 
@@ -33,7 +33,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { error } = loginValidator.validate(req.body);
-    if (error) return res.status(400).json({ error: error.details });
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
     const { email, password } = req.body;
     const user = await User.findOne({ email });
