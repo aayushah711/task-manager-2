@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/auth", authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/members", membersRoutes);
-app.use("/project", projectRoutes);
+app.use("/projects", projectRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
