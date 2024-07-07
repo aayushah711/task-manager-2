@@ -1,8 +1,8 @@
-const { DataTypes } = require("@sequelize/core");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
 const User = sequelize.define("User", {
-  userId: {
+  id: {
     type: DataTypes.BIGINT,
     autoIncrement: true,
     primaryKey: true,
@@ -36,7 +36,7 @@ sequelize
     console.log("User table has been created.", sequelize.models);
   })
   .catch((err) => {
-    console.error("Unable to create the table:", err);
+    console.error("Unable to create the User table:", err);
   });
 
 module.exports = User;

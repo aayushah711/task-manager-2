@@ -1,8 +1,8 @@
-const { DataTypes } = require("@sequelize/core");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
 const Project = sequelize.define("Project", {
-  projectId: {
+  id: {
     type: DataTypes.BIGINT,
     autoIncrement: true,
     primaryKey: true,
@@ -12,8 +12,8 @@ const Project = sequelize.define("Project", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  members: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
+  description: {
+    type: DataTypes.STRING,
   },
 });
 
@@ -23,7 +23,7 @@ sequelize
     console.log("Project table has been created.", sequelize.models);
   })
   .catch((err) => {
-    console.error("Unable to create the table:", err);
+    console.error("Unable to create the Project table:", err);
   });
 
 module.exports = Project;

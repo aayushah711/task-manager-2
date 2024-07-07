@@ -1,3 +1,4 @@
+// @ts-nocheck
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
@@ -36,7 +37,7 @@ exports.login = async (req, res) => {
     if (error) return res.status(400).json({ error: error.details[0].message });
 
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ where: { email } });
     if (!user) return res.status(400).json({ error: "Invalid Email" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -44,11 +45,10 @@ exports.login = async (req, res) => {
 
     if (process.env.API_SECRET) {
       const token = jwt.sign(
-        { id: user._id, email: user.email, role: user.role },
-        process.env.API_SECRET,
-        { expiresIn: "1h" }
+        { id: user.id, email: user.email },
+        process.env.API_SECRET
       );
-      return res.status(200).json({ token });
+      return res.status(200).json(token);
     }
 
     res.status(500).json({

@@ -1,4 +1,6 @@
+// @ts-nocheck
 const Project = require("../models/Project");
+const User = require("../models/User");
 const projectValidator = require("../validators/projectValidator");
 
 exports.createProject = async (req, res) => {
@@ -6,7 +8,7 @@ exports.createProject = async (req, res) => {
     const { error } = projectValidator.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message });
 
-    const { name, members } = req.body;
+    const { name, description, userIds } = req.body;
 
     let project = await Project.findOne({ where: { name } });
     if (project)
@@ -14,11 +16,20 @@ exports.createProject = async (req, res) => {
         .status(400)
         .json({ error: `Project with name '${name}' already exists` });
 
-    // TODO: check if all members in the list are valid
     project = await Project.create({
       name,
-      members,
+      description,
     });
+
+    if (userIds) {
+      const users = await User.findAll({
+        where: {
+          id: userIds,
+        },
+      });
+
+      await project.addUsers(users);
+    }
 
     res
       .status(201)
@@ -30,7 +41,12 @@ exports.createProject = async (req, res) => {
 
 exports.fetchUserProjects = async (req, res) => {
   try {
-    res.status(200).json({ message: "fetchUserProjects!" });
+    const userId = req.user.id;
+    const user = await User.findByPk(userId, { include: "Projects" });
+
+    res
+      .status(200)
+      .json({ message: "fetchUserProjects!", data: user.Projects });
   } catch (error) {
     res.status(500).json({ error });
   }
