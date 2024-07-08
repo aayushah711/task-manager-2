@@ -3,9 +3,11 @@ const authRoutes = require("./src/routes/authRoutes");
 const profileRoutes = require("./src/routes/profileRoutes");
 const membersRoutes = require("./src/routes/membersRoutes");
 const projectRoutes = require("./src/routes/projectRoutes");
+const taskRoutes = require("./src/routes/taskRoutes");
 const sequelize = require("./src/config/database");
 const User = require("./src/models/User");
 const Project = require("./src/models/Project");
+const Task = require("./src/models/Task");
 require("dotenv").config();
 
 const app = express();
@@ -16,6 +18,7 @@ app.use("/auth", authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/members", membersRoutes);
 app.use("/projects", projectRoutes);
+app.use("/tasks", taskRoutes);
 
 (async () => {
   try {
@@ -25,8 +28,16 @@ app.use("/projects", projectRoutes);
     User.belongsToMany(Project, { through: "UserProject" });
     Project.belongsToMany(User, { through: "UserProject" });
 
+    Task.belongsTo(Project);
+    Project.hasMany(Task, { foreignKey: "ProjectId" });
+
+    User.hasMany(Task, { foreignKey: "createdBy" });
+    User.hasMany(Task, { foreignKey: "assignee" });
+    Task.belongsTo(User, { foreignKey: "createdBy" });
+    Task.belongsTo(User, { foreignKey: "assignee" });
+
     sequelize
-      .sync()
+      .sync({ force: true })
       .then(() => {
         console.log("UserProject table has been created.", sequelize.models);
       })
