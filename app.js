@@ -37,7 +37,7 @@ app.use("/tasks", taskRoutes);
     Task.belongsTo(User, { foreignKey: "assignee" });
 
     sequelize
-      .sync({ force: true })
+      .sync()
       .then(() => {
         console.log("UserProject table has been created.", sequelize.models);
       })

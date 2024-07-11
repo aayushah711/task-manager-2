@@ -2,7 +2,10 @@
 const Project = require("../models/Project");
 const Task = require("../models/Task");
 const User = require("../models/User");
-const { createTaskValidator } = require("../validators/taskValidator");
+const {
+  createTaskValidator,
+  getTaskValidator,
+} = require("../validators/taskValidator");
 
 exports.createTask = async (req, res) => {
   try {
@@ -24,6 +27,14 @@ exports.createTask = async (req, res) => {
       return res.status(404).json({ error: "Assignee not found" });
     }
 
+    // Check if assignee is a member of the project
+    const isMember = await project.hasUser(assigneeUser);
+    if (value.assignee && !isMember) {
+      return res
+        .status(403)
+        .json({ error: "Assignee is not a member of the project" });
+    }
+
     const task = await Task.create({
       ...value,
       ...(assigneeUser && { assignee: assigneeUser.id }),
@@ -40,7 +51,17 @@ exports.createTask = async (req, res) => {
 
 exports.fetchTasks = async (req, res) => {
   try {
-    res.status(200).json({ message: "Tasks" });
+    const { error, value } = getTaskValidator.validate(req.query);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+
+    const { projectId } = value;
+
+    const project = await Project.findByPk(projectId);
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    const tasks = await Task.findAll({ where: { ProjectId: projectId } });
+
+    res.status(200).json({ tasks });
   } catch (error) {
     res.status(500).json({ error });
   }
