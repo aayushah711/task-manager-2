@@ -7,6 +7,7 @@ const {
   getTaskValidator,
   updateTaskValidator,
 } = require("../validators/taskValidator");
+const _lodash = require("lodash");
 
 const validateAndAssignTask = async (req, res, isUpdate = false) => {
   const { error, value } = isUpdate
@@ -123,6 +124,23 @@ exports.deleteTask = async (req, res) => {
     await task.destroy();
 
     res.status(200).json({ message: "Task deleted successfully!" });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+};
+
+exports.fetchTasksByUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const tasks = await Task.findAll({
+      where: { assignee: userId },
+      include: { model: Project },
+    });
+
+    const tasksByProject = _lodash.groupBy(tasks, "ProjectId");
+
+    res.status(200).json(tasksByProject);
   } catch (error) {
     res.status(500).json({ error });
   }
