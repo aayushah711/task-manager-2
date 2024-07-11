@@ -112,7 +112,17 @@ exports.updateTask = async (req, res) => {
 
 exports.deleteTask = async (req, res) => {
   try {
-    res.status(200).json({ message: "Deleted" });
+    const taskId = req.params.taskId;
+    const task = await Task.findByPk(taskId);
+    if (!task) return res.status(404).json({ error: "Task not found" });
+
+    if (task.createdBy !== req.user.id) {
+      return res.status(403).json({ error: "Unauthorized to delete the task" });
+    }
+
+    await task.destroy();
+
+    res.status(200).json({ message: "Task deleted successfully!" });
   } catch (error) {
     res.status(500).json({ error });
   }

@@ -10,8 +10,8 @@ const router = express.Router();
 
 router.get("/", fetchTasks);
 router.post("/", authenticateToken, createTask);
-router.put("/:id", authenticateToken, updateTask);
-router.delete("/:id", authenticateToken, deleteTask);
+router.put("/:taskId", authenticateToken, updateTask);
+router.delete("/:taskId", authenticateToken, deleteTask);
 // router.get("/user", getUserTasks);
 
 module.exports = router;
