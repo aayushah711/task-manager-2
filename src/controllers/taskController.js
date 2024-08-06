@@ -76,7 +76,7 @@ exports.fetchTasks = async (req, res) => {
     if (!project) return res.status(404).json({ error: "Project not found" });
 
     const payload = {
-      ProjectId: projectId,
+      projectId,
       ...(status && { status }),
     };
 
@@ -113,8 +113,19 @@ exports.updateTask = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized to update the task" });
     }
 
+    if (task.projectId !== value.projectId) {
+      return res.status(400).json({
+        error: "Switching the task's project is not allowed",
+      });
+    }
+
     await task.update({
       ...value,
+      id: task.id,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt,
+      createdBy: task.createdBy,
+
       ...(assigneeUser && { assignee: assigneeUser.id }),
     });
 
@@ -151,7 +162,7 @@ exports.fetchTasksByUser = async (req, res) => {
       include: { model: Project },
     });
 
-    const tasksByProject = _lodash.groupBy(tasks, "ProjectId");
+    const tasksByProject = _lodash.groupBy(tasks, "projectId");
 
     res.status(200).json(tasksByProject);
   } catch (error) {

@@ -19,11 +19,15 @@ const getTaskValidator = Joi.object().keys({
 });
 
 const updateTaskValidator = Joi.object().keys({
+  id: Joi.string().optional(),
   title: Joi.string().min(3).max(255),
   description: Joi.string().max(1000),
-  projectId: Joi.string(),
   dueDate: Joi.date(),
-  completed: Joi.boolean(),
+  status: Joi.string().valid(...taskStatus),
+  createdAt: Joi.string().optional(),
+  updatedAt: Joi.string().optional(),
+  projectId: Joi.string().optional(),
+  createdBy: Joi.string().optional(),
   assignee: Joi.string(),
 });
 

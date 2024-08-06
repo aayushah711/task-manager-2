@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
 const User = sequelize.define(
-  "User",
+  "user",
   {
     id: {
       type: DataTypes.BIGINT,
@@ -31,7 +31,7 @@ const User = sequelize.define(
       type: DataTypes.STRING,
     },
   },
-  { modelName: "User", tableName: "Users" }
+  { modelName: "user", tableName: "users" }
 );
 
 module.exports = User;

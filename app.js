@@ -29,7 +29,7 @@ app.use("/tasks", taskRoutes);
     Project.belongsToMany(User, { through: "UserProject" });
 
     Task.belongsTo(Project);
-    Project.hasMany(Task, { foreignKey: "ProjectId" });
+    Project.hasMany(Task, { foreignKey: "projectId" });
 
     User.hasMany(Task, { foreignKey: "createdBy" });
     User.hasMany(Task, { foreignKey: "assignee" });

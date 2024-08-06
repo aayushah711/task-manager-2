@@ -3,7 +3,7 @@ const sequelize = require("../config/database");
 const { taskStatus } = require("../constants");
 
 const Task = sequelize.define(
-  "Task",
+  "task",
   {
     id: {
       type: DataTypes.BIGINT,
@@ -26,7 +26,7 @@ const Task = sequelize.define(
       defaultValue: "open",
     },
   },
-  { modelName: "Task", tableName: "Tasks" }
+  { modelName: "task", tableName: "tasks" }
 );
 
 module.exports = Task;

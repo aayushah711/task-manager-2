@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
 const Project = sequelize.define(
-  "Project",
+  "project",
   {
     id: {
       type: DataTypes.BIGINT,
@@ -18,7 +18,7 @@ const Project = sequelize.define(
       type: DataTypes.STRING,
     },
   },
-  { modelName: "Project", tableName: "Projects" }
+  { modelName: "project", tableName: "projects" }
 );
 
 module.exports = Project;

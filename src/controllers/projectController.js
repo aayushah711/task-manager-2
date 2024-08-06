@@ -42,11 +42,11 @@ exports.createProject = async (req, res) => {
 exports.fetchUserProjects = async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await User.findByPk(userId, { include: "Projects" });
+    const user = await User.findByPk(userId, { include: "projects" });
 
     res
       .status(200)
-      .json({ message: "fetchUserProjects!", data: user.Projects });
+      .json({ message: "fetchUserProjects!", data: user.projects });
   } catch (error) {
     res.status(500).json({ error });
   }
