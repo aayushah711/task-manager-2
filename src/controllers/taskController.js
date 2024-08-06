@@ -1,4 +1,5 @@
 // @ts-nocheck
+const { Op } = require("sequelize");
 const Project = require("../models/Project");
 const Task = require("../models/Task");
 const User = require("../models/User");
@@ -69,12 +70,24 @@ exports.fetchTasks = async (req, res) => {
     const { error, value } = getTaskValidator.validate(req.query);
     if (error) return res.status(400).json({ error: error.details[0].message });
 
-    const { projectId } = value;
+    const { projectId, status, search } = value;
 
     const project = await Project.findByPk(projectId);
     if (!project) return res.status(404).json({ error: "Project not found" });
 
-    const tasks = await Task.findAll({ where: { ProjectId: projectId } });
+    const payload = {
+      ProjectId: projectId,
+      ...(status && { status }),
+    };
+
+    if (search) {
+      payload[Op.or] = [
+        { title: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } },
+      ];
+    }
+
+    const tasks = await Task.findAll({ where: payload });
 
     res.status(200).json({ tasks });
   } catch (error) {
