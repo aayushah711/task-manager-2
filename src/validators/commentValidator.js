@@ -5,4 +5,8 @@ const createCommentValidator = Joi.object().keys({
   taskId: Joi.string().required(),
 });
 
-module.exports = { createCommentValidator };
+const getCommentsValidator = Joi.object().keys({
+  taskId: Joi.string().required(),
+});
+
+module.exports = { createCommentValidator, getCommentsValidator };

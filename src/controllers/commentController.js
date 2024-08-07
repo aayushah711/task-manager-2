@@ -3,7 +3,10 @@ const Comment = require("../models/Comment");
 const Project = require("../models/Project");
 const Task = require("../models/Task");
 const User = require("../models/User");
-const { createCommentValidator } = require("../validators/commentValidator");
+const {
+  createCommentValidator,
+  getCommentsValidator,
+} = require("../validators/commentValidator");
 
 const validateComment = async (req, res) => {
   const { error, value } = createCommentValidator.validate(req.body);
@@ -51,7 +54,13 @@ exports.createComment = async (req, res) => {
 
 exports.fetchCommentsOfTask = async (req, res) => {
   try {
-    res.status(200).json({ comments: [] });
+    const params = req.query;
+    const { error, value } = getCommentsValidator.validate(req.query);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+
+    const comments = await Comment.findAll({ where: { taskId: value.taskId } });
+
+    res.status(200).json({ comments });
   } catch (error) {
     res.status(500).json({ error });
   }
