@@ -10,6 +10,7 @@ const User = require("./src/models/User");
 const Project = require("./src/models/Project");
 const Task = require("./src/models/Task");
 const Comment = require("./src/models/Comment");
+const Attachment = require("./src/models/Attachment");
 require("dotenv").config();
 
 const app = express();
@@ -45,6 +46,12 @@ app.use("/comments", commentRoutes);
 
     User.hasMany(Comment, { foreignKey: "createdBy" });
     Comment.belongsTo(User, { foreignKey: "createdBy" });
+
+    Task.hasMany(Attachment, { foreignKey: "taskId" });
+    Attachment.belongsTo(Task, { foreignKey: "taskId" });
+
+    Comment.hasMany(Attachment, { foreignKey: "commentId" });
+    Attachment.belongsTo(Comment, { foreignKey: "commentId" });
 
     sequelize
       .sync()

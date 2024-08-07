@@ -1,11 +1,13 @@
 // @ts-nocheck
 const { Op } = require("sequelize");
+const Attachment = require("../models/Attachment");
+const Comment = require("../models/Comment");
 const Project = require("../models/Project");
 const Task = require("../models/Task");
 const User = require("../models/User");
 const {
   createTaskValidator,
-  getTaskValidator,
+  getTasksValidator,
   updateTaskValidator,
 } = require("../validators/taskValidator");
 const _lodash = require("lodash");
@@ -73,7 +75,7 @@ exports.createTask = async (req, res) => {
 
 exports.fetchTasks = async (req, res) => {
   try {
-    const { error, value } = getTaskValidator.validate(req.query);
+    const { error, value } = getTasksValidator.validate(req.query);
     if (error) return res.status(400).json({ error: error.details[0].message });
 
     const { projectId, status, search } = value;
@@ -171,6 +173,28 @@ exports.fetchTasksByUser = async (req, res) => {
     const tasksByProject = _lodash.groupBy(tasks, "projectId");
 
     res.status(200).json(tasksByProject);
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+};
+
+exports.fetchTaskById = async (req, res) => {
+  try {
+    const taskId = req.params.taskId;
+
+    const task = await Task.findByPk(taskId, {
+      include: {
+        model: Comment,
+        as: "comments",
+        include: {
+          model: Attachment,
+          as: "attachments",
+        },
+      },
+    });
+    if (!task) return res.status(404).json({ error: "Task not found" });
+
+    res.status(200).json({ task });
   } catch (error) {
     res.status(500).json({ error });
   }

@@ -10,7 +10,7 @@ const createTaskValidator = Joi.object().keys({
   assignee: Joi.string().optional(),
 });
 
-const getTaskValidator = Joi.object().keys({
+const getTasksValidator = Joi.object().keys({
   projectId: Joi.string().required(),
   dueDate: Joi.date().optional(),
   status: Joi.string().valid(...taskStatus),
@@ -31,4 +31,8 @@ const updateTaskValidator = Joi.object().keys({
   assignee: Joi.string(),
 });
 
-module.exports = { createTaskValidator, getTaskValidator, updateTaskValidator };
+module.exports = {
+  createTaskValidator,
+  getTasksValidator,
+  updateTaskValidator,
+};

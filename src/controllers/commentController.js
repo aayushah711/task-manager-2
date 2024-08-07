@@ -1,4 +1,5 @@
 // @ts-nocheck
+const Attachment = require("../models/Attachment");
 const Comment = require("../models/Comment");
 const Project = require("../models/Project");
 const Task = require("../models/Task");
@@ -46,21 +47,15 @@ exports.createComment = async (req, res) => {
       taskId: task.id,
     });
 
+    let { attachments } = value;
+    if (attachments && attachments.length > 0) {
+      const attachmentPromises = attachments.map((url) => {
+        return Attachment.create({ url, commentId: comment.id });
+      });
+      await Promise.all(attachmentPromises);
+    }
+
     res.status(201).json({ message: "Comment created successfully!", comment });
-  } catch (error) {
-    res.status(500).json({ error });
-  }
-};
-
-exports.fetchCommentsOfTask = async (req, res) => {
-  try {
-    const params = req.query;
-    const { error, value } = getCommentsValidator.validate(req.query);
-    if (error) return res.status(400).json({ error: error.details[0].message });
-
-    const comments = await Comment.findAll({ where: { taskId: value.taskId } });
-
-    res.status(200).json({ comments });
   } catch (error) {
     res.status(500).json({ error });
   }
