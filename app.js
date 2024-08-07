@@ -4,10 +4,12 @@ const profileRoutes = require("./src/routes/profileRoutes");
 const membersRoutes = require("./src/routes/membersRoutes");
 const projectRoutes = require("./src/routes/projectRoutes");
 const taskRoutes = require("./src/routes/taskRoutes");
+const commentRoutes = require("./src/routes/commentRoutes");
 const sequelize = require("./src/config/database");
 const User = require("./src/models/User");
 const Project = require("./src/models/Project");
 const Task = require("./src/models/Task");
+const Comment = require("./src/models/Comment");
 require("dotenv").config();
 
 const app = express();
@@ -19,6 +21,7 @@ app.use("/profile", profileRoutes);
 app.use("/members", membersRoutes);
 app.use("/projects", projectRoutes);
 app.use("/tasks", taskRoutes);
+app.use("/comments", commentRoutes);
 
 (async () => {
   try {
@@ -28,13 +31,20 @@ app.use("/tasks", taskRoutes);
     User.belongsToMany(Project, { through: "UserProject" });
     Project.belongsToMany(User, { through: "UserProject" });
 
-    Task.belongsTo(Project);
     Project.hasMany(Task, { foreignKey: "projectId" });
+    Task.belongsTo(Project);
 
     User.hasMany(Task, { foreignKey: "createdBy" });
-    User.hasMany(Task, { foreignKey: "assignee" });
     Task.belongsTo(User, { foreignKey: "createdBy" });
+
+    User.hasMany(Task, { foreignKey: "assignee" });
     Task.belongsTo(User, { foreignKey: "assignee" });
+
+    Task.hasMany(Comment, { foreignKey: "taskId" });
+    Comment.belongsTo(Task, { foreignKey: "taskId" });
+
+    User.hasMany(Comment, { foreignKey: "createdBy" });
+    Comment.belongsTo(User, { foreignKey: "createdBy" });
 
     sequelize
       .sync()

@@ -24,6 +24,12 @@ const validateAndAssignTask = async (req, res, isUpdate = false) => {
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
+  const userIsMember = await project.hasUser(user);
+  if (!userIsMember) {
+    return res
+      .status(403)
+      .json({ error: "Task creator is not a member of the project" });
+  }
 
   const assigneeUser = value.assignee
     ? await User.findByPk(value.assignee)
@@ -32,8 +38,8 @@ const validateAndAssignTask = async (req, res, isUpdate = false) => {
     return res.status(404).json({ error: "Assignee not found" });
   }
 
-  const isMember = await project.hasUser(assigneeUser);
-  if (value.assignee && !isMember) {
+  const assigneeIsMember = await project.hasUser(assigneeUser);
+  if (value.assignee && !assigneeIsMember) {
     return res
       .status(403)
       .json({ error: "Assignee is not a member of the project" });
