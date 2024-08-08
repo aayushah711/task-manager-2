@@ -63,11 +63,37 @@ exports.createTask = async (req, res) => {
       ...value,
       ...(assigneeUser && { assignee: assigneeUser.id }),
       createdBy: user.id,
+      projectId: project.id,
     });
 
-    await task.setProject(project);
+    let { attachments } = value;
+    if (attachments?.length > 0) {
+      const requestAttachments = attachments.map((att) => att.url);
+      const attachmentPromises = requestAttachments.map((url) => {
+        return Attachment.create({ url, taskId: task.id });
+      });
+      await Promise.all(attachmentPromises);
+    }
+    const createdTask = await Task.findByPk(task.id, {
+      include: [
+        {
+          model: Comment,
+          as: "comments",
+          include: {
+            model: Attachment,
+            as: "attachments",
+          },
+        },
+        {
+          model: Attachment,
+          as: "attachments",
+        },
+      ],
+    });
 
-    res.status(201).json({ message: "Task created successfully!", task });
+    res
+      .status(201)
+      .json({ message: "Task created successfully!", task: createdTask });
   } catch (error) {
     res.status(500).json({ error });
   }
@@ -113,31 +139,81 @@ exports.updateTask = async (req, res) => {
 
     if (!value) return;
 
-    const taskId = req.params.taskId;
-    const task = await Task.findByPk(taskId);
+    const { taskId } = req.params;
+    const task = await Task.findByPk(taskId, {
+      include: { model: Attachment, as: "attachments" },
+    });
     if (!task) return res.status(404).json({ error: "Task not found" });
 
     if (task.createdBy !== user.id) {
       return res.status(403).json({ error: "Unauthorized to update the task" });
     }
 
-    if (task.projectId !== value.projectId) {
+    const {
+      title,
+      description,
+      dueDate,
+      status,
+      assignee,
+      attachments,
+      projectId,
+    } = value;
+
+    if (task.projectId !== projectId) {
       return res.status(400).json({
         error: "Switching the task's project is not allowed",
       });
     }
 
-    await task.update({
-      ...value,
-      id: task.id,
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt,
-      createdBy: task.createdBy,
+    // Update task details
+    task.title = title || task.title;
+    task.description = description || task.description;
+    task.dueDate = dueDate || task.dueDate;
+    task.status = status || task.status;
+    task.assignee = assignee || task.assignee;
+    await task.save();
 
-      ...(assigneeUser && { assignee: assigneeUser.id }),
+    // Add new attachments and Remove non existing attachments
+    const currentAttachments = task.attachments.map((att) => att.url);
+    const requestAttachments = attachments.map((att) => att.url);
+
+    const newAttachments = requestAttachments.filter(
+      (url) => !currentAttachments.includes(url)
+    );
+    const additionPromises = newAttachments.map((url) => {
+      return Attachment.create({
+        url,
+        taskId: task.id,
+      });
     });
 
-    res.status(200).json({ message: "Task updated successfully!", task });
+    const attachmentsToRemove = task.attachments.filter(
+      (att) => !requestAttachments.includes(att.url)
+    );
+    const removalPromises = attachmentsToRemove.map((att) => att.destroy());
+
+    await Promise.all([...additionPromises, ...removalPromises]);
+
+    const updatedTask = await Task.findByPk(taskId, {
+      include: [
+        {
+          model: Comment,
+          as: "comments",
+          include: {
+            model: Attachment,
+            as: "attachments",
+          },
+        },
+        {
+          model: Attachment,
+          as: "attachments",
+        },
+      ],
+    });
+
+    res
+      .status(200)
+      .json({ message: "Task updated successfully!", updatedTask });
   } catch (error) {
     res.status(500).json({ error });
   }
@@ -183,14 +259,20 @@ exports.fetchTaskById = async (req, res) => {
     const taskId = req.params.taskId;
 
     const task = await Task.findByPk(taskId, {
-      include: {
-        model: Comment,
-        as: "comments",
-        include: {
+      include: [
+        {
+          model: Comment,
+          as: "comments",
+          include: {
+            model: Attachment,
+            as: "attachments",
+          },
+        },
+        {
           model: Attachment,
           as: "attachments",
         },
-      },
+      ],
     });
     if (!task) return res.status(404).json({ error: "Task not found" });
 

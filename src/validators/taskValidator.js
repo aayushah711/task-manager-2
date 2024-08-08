@@ -8,6 +8,7 @@ const createTaskValidator = Joi.object().keys({
   dueDate: Joi.date().optional(),
   status: Joi.string().valid(...taskStatus),
   assignee: Joi.string().optional(),
+  attachments: Joi.array().items(Joi.object()).optional(),
 });
 
 const getTasksValidator = Joi.object().keys({
@@ -29,6 +30,8 @@ const updateTaskValidator = Joi.object().keys({
   projectId: Joi.string().optional(),
   createdBy: Joi.string().optional(),
   assignee: Joi.string(),
+  comments: Joi.array().optional(),
+  attachments: Joi.array().items(Joi.object()).optional(),
 });
 
 module.exports = {
