@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO notification</title>
+    <style>
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Notification for user 1</h1>
+    <ul id="notifications"></ul>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+      const socket = io();
+      socket.on("connect", () => {
+        console.log("Connected to server");
+      });
+      // Listen for notifications
+      socket.on("notification_1", (notification) => {
+        const notificationsList = document.getElementById("notifications");
+        const newNotificationItem = document.createElement("li");
+        newNotificationItem.textContent = notification.message;
+        notificationsList.appendChild(newNotificationItem);
+      });
+    </script>
+  </body>
+</html>

@@ -59,14 +59,26 @@ exports.createTask = async (req, res) => {
 
     if (!value) return;
 
+    const {
+      title,
+      description,
+      dueDate,
+      status,
+      assignee,
+      attachments,
+      projectId,
+    } = value;
+
     const task = await Task.create({
-      ...value,
+      title,
+      description,
+      dueDate,
+      status,
       ...(assigneeUser && { assignee: assigneeUser.id }),
       createdBy: user.id,
       projectId: project.id,
     });
 
-    let { attachments } = value;
     if (attachments?.length > 0) {
       const requestAttachments = attachments.map((att) => att.url);
       const attachmentPromises = requestAttachments.map((url) => {
@@ -74,6 +86,17 @@ exports.createTask = async (req, res) => {
       });
       await Promise.all(attachmentPromises);
     }
+
+    // Notify the assignee
+    if (assigneeUser) {
+      const io = req.app.get("socketio");
+      io.emit(`notification_${assignee}`, {
+        message: `You have been assigned a new task: ${title}`,
+        taskId: task.id,
+        taskTitle: title,
+      });
+    }
+
     const createdTask = await Task.findByPk(task.id, {
       include: [
         {
@@ -170,6 +193,8 @@ exports.updateTask = async (req, res) => {
     task.description = description || task.description;
     task.dueDate = dueDate || task.dueDate;
     task.status = status || task.status;
+
+    const isNewAssignee = assignee !== task.assignee;
     task.assignee = assignee || task.assignee;
     await task.save();
 
@@ -193,6 +218,16 @@ exports.updateTask = async (req, res) => {
     const removalPromises = attachmentsToRemove.map((att) => att.destroy());
 
     await Promise.all([...additionPromises, ...removalPromises]);
+
+    // Notify the new assignee
+    if (isNewAssignee) {
+      const io = req.app.get("socketio");
+      io.emit(`notification_${assignee}`, {
+        message: `You have been assigned a new task: ${title}`,
+        taskId: task.id,
+        taskTitle: title,
+      });
+    }
 
     const updatedTask = await Task.findByPk(taskId, {
       include: [

@@ -11,9 +11,19 @@ const Project = require("./src/models/Project");
 const Task = require("./src/models/Task");
 const Comment = require("./src/models/Comment");
 const Attachment = require("./src/models/Attachment");
+const path = require("path");
+const http = require("http");
 require("dotenv").config();
 
 const app = express();
+const server = http.createServer(app);
+
+// Socket.IO setup
+const { Server } = require("socket.io");
+const io = new Server(server);
+app.set("socketio", io);
+app.use(express.static(path.join(__dirname, "src/views")));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -66,8 +76,18 @@ app.use("/comments", commentRoutes);
   }
 })();
 
+// Socket.IO connection handler
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  // Disconnect handler
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, async () => {
+server.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
   try {
     await sequelize.sync();
