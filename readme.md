@@ -12,17 +12,23 @@ A Task Tracking and Management Application backend built with Node.js, Express, 
 
 ## Table of Contents
 
+- [Data Model](#data-model)
+  - [Entities](#entities)
+  - [Relationships](#relationships)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Database Setup](#database-setup)
   - [Running the Application](#running-the-application)
 - [API Documentation](#api-documentation)
-  - [User Routes](#user-routes)
+  - [Auth Routes](#auth-routes)
+  - [Profile Routes](#profile-routes)
+  - [Members Routes](#members-routes)
+  - [Project Routes](#project-routes)
   - [Task Routes](#task-routes)
   - [Comment Routes](#comment-routes)
-  - [Project Routes](#project-routes)
 - [Real-Time Notifications](#real-time-notifications)
+- [WebSocket Implementation](#web-socket-implementation)
 
 ## Data Model
 
@@ -145,31 +151,31 @@ npm start
 
 2. The API will be available at http://localhost:3000.
 
-### API Documentation
+## API Documentation
 
-#### Auth Routes
+### Auth Routes
 
 - POST /auth/register: Register a new user.
 - POST /auth/login: Login and obtain an access token.
 - POST /auth/logout: Login and obtain an access token.
 
-#### Profile Routes
+### Profile Routes
 
 - GET /profile: View the logged-in user's profile.
 - PUT /profile: Update user profile information.
 
-#### Members Routes
+### Members Routes
 
 - GET /members: View all the user's profiles available on platform.
 
-#### Project Routes
+### Project Routes
 
 - POST /projects: Create a new project.
 - GET /projects/user: Get all projects of a specific user.
 - PUT /projects/:id: Update a project.
 - DELETE /projects/:id: Delete a project.
 
-#### Task Routes
+### Task Routes
 
 - GET /tasks: Get all tasks of a specific project with options to filter by status and search by title or description.
 - POST /tasks: Create a new task.
@@ -178,15 +184,15 @@ npm start
 - DELETE /tasks/:id: Delete a task.
 - GET /tasks/user: Get all tasks of a specific user.
 
-#### Comment Routes
+### Comment Routes
 
 - POST /comments: Add a comment to a task.
 
-### Real-Time Notifications
+## Real-Time Notifications
 
 The application uses WebSockets to provide real-time notifications when a task is assigned to a user.
 
-### WebSocket Implementation
+## WebSocket Implementation
 
 - Socket Events:
   notification\_{userId}: Triggered when a task is assigned to a user or updated.
