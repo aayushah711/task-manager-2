@@ -38,23 +38,23 @@ The core entities in the data model are:
 
 1. User: Represents a user in the system. Users can create tasks, be assigned tasks, and participate in projects.
 
-- Attributes: id, name, email, password, profileImage
+   - Attributes: id, firstName, lastName, email, password, profilePic
 
 2. Project: Represents a project or team within the system. A project can have multiple tasks and users.
 
-- Attributes: id, name, description
+   - Attributes: id, name, description
 
 3. Task: Represents a task within a project. A task can have a title, description, due date, and be assigned to a user.
 
-- Attributes: id, title, description, dueDate, status, createdBy, assignee, projectId
+   - Attributes: id, title, description, dueDate, status, createdBy, assignee, projectId
 
 4. Comment: Represents a comment made on a task. A comment can have attachments.
 
-- Attributes: id, content, userId, taskId
+   - Attributes: id, content, userId, taskId
 
 5. Attachment: Represents a file attached to a task or comment.
 
-- Attributes: id, fileName, fileType, filePath, taskId, commentId
+   - Attributes: id, url, taskId, commentId
 
 ### Relationships
 
