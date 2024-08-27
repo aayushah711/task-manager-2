@@ -7,7 +7,11 @@ const User = require("../models/User");
 const {
   createCommentValidator,
   getCommentsValidator,
+  updateCommentValidator,
+  deleteCommentValidator,
 } = require("../validators/commentValidator");
+const AttachmentService = require("../services/attachmentService");
+const attachmentService = AttachmentService.getInstance();
 
 const validateComment = async (req, res) => {
   const { error, value } = createCommentValidator.validate(req.body);
@@ -56,6 +60,61 @@ exports.createComment = async (req, res) => {
     }
 
     res.status(201).json({ message: "Comment created successfully!", comment });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+};
+
+exports.updateComment = async (req, res) => {
+  try {
+    const { value } = updateCommentValidator.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+
+    const { commentId } = req.params;
+    const comment = await Comment.findByPk(commentId, {
+      include: { model: Attachment, as: "attachments" },
+    });
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
+
+    // Only the creator can update
+    if (comment.createdBy !== req.user.id) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to update the comment" });
+    }
+
+    let { content, attachments } = value;
+
+    if (content && comment.content !== content) {
+      comment.content = value.content;
+      await comment.save();
+    }
+
+    // Add new attachments and Remove non existing attachments
+    const currentAttachments = comment.attachments.map((att) => att.url);
+    const requestAttachments = attachments.map((att) => att.url);
+    await attachmentService.updateAttachments({
+      commentId: comment.id,
+      entity: comment,
+      currentAttachments,
+      requestAttachments,
+    });
+
+    res.status(200).json({ message: "Comment updated successfully!" });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+};
+
+exports.deleteComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const comment = await Comment.findByPk(commentId);
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
+
+    await comment.destroy();
+
+    res.status(200).json({ message: "Comment deleted successfully!" });
   } catch (error) {
     res.status(500).json({ error });
   }

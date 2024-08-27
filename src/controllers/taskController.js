@@ -11,6 +11,8 @@ const {
   updateTaskValidator,
 } = require("../validators/taskValidator");
 const _lodash = require("lodash");
+const AttachmentService = require("../services/attachmentService");
+const attachmentService = AttachmentService.getInstance();
 
 const validateAndAssignTask = async (req, res, isUpdate = false) => {
   const { error, value } = isUpdate
@@ -201,23 +203,12 @@ exports.updateTask = async (req, res) => {
     // Add new attachments and Remove non existing attachments
     const currentAttachments = task.attachments.map((att) => att.url);
     const requestAttachments = attachments.map((att) => att.url);
-
-    const newAttachments = requestAttachments.filter(
-      (url) => !currentAttachments.includes(url)
-    );
-    const additionPromises = newAttachments.map((url) => {
-      return Attachment.create({
-        url,
-        taskId: task.id,
-      });
+    await attachmentService.updateAttachments({
+      taskId: task.id,
+      entity: task,
+      currentAttachments,
+      requestAttachments,
     });
-
-    const attachmentsToRemove = task.attachments.filter(
-      (att) => !requestAttachments.includes(att.url)
-    );
-    const removalPromises = attachmentsToRemove.map((att) => att.destroy());
-
-    await Promise.all([...additionPromises, ...removalPromises]);
 
     // Notify the new assignee
     if (isNewAssignee) {
